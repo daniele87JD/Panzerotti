@@ -9,8 +9,8 @@ permissions:
   contents: read
 
 env:
-  HF_USERNAME: "METTI_QUI_IL_TUO_USERNAME_HF"
-  HF_SPACE_NAME: "METTI_QUI_IL_NOME_DELLO_SPACE"
+  HF_USERNAME: "BiciMonello"
+  HF_SPACE_NAME: "besti"
   BRANCH: "main"
 
 jobs:
