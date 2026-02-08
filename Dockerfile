@@ -5,11 +5,11 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
     PORT=7860 \
-    REQUIRE_API_PASSWORD=true
+    LOG_LEVEL=INFO
 
 WORKDIR /app
 
-# ffmpeg + certs (no git, no clone)
+# ffmpeg + certs (niente git, niente clone)
 RUN apt-get update \
  && apt-get install -y --no-install-recommends ffmpeg ca-certificates \
  && rm -rf /var/lib/apt/lists/*
@@ -25,4 +25,5 @@ USER appuser
 
 EXPOSE 7860
 
-CMD ["sh","-c","gunicorn --bind 0.0.0.0:${PORT:-7860} --workers 2 --worker-class aiohttp.worker.GunicornWebWorker --timeout 120 --graceful-timeout 120 app:app"]
+# Avvio semplice: così vediamo subito errori/import/traceback nei log
+CMD ["sh","-c","python -u app.py"]
