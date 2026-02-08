@@ -1,29 +1,30 @@
+# Fase 1: Build
+# Usa un'immagine Python con base Debian per FFmpeg completo
 FROM python:3.11-bookworm
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PIP_NO_CACHE_DIR=1 \
-    PORT=7860 \
-    LOG_LEVEL=INFO
+# Installa git e FFmpeg (versione completa con DASH/CENC)
+RUN apt-get update && apt-get install -y git ffmpeg && rm -rf /var/lib/apt/lists/*
 
+# Imposta la directory di lavoro all'interno del container.
 WORKDIR /app
 
-# ffmpeg + certs (niente git, niente clone)
-RUN apt-get update \
- && apt-get install -y --no-install-recommends ffmpeg ca-certificates \
- && rm -rf /var/lib/apt/lists/*
+# CLONA il repository. Questo comando scarica TUTTI i file, incluso requirements.txt.
+RUN git clone https://github.com/stremio-manager/EasyProxy . 
 
-COPY requirements.txt ./
-RUN pip install -r requirements.txt
+# Installa le dipendenze Python.
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY . .
+# Copia il resto del codice dell'applicazione nella directory di lavoro.
 
-# run as non-root
-RUN useradd -m -u 1000 appuser && chown -R appuser:appuser /app
-USER appuser
+# Metadata dell'immagine OCI (Open Container Initiative) corretti.
+LABEL org.opencontainers.image.title="HLS Proxy Server"
+LABEL org.opencontainers.image.description="Server proxy universale per stream HLS con supporto Vavoo, DLHD e playlist builder"
+LABEL org.opencontainers.image.version="2.5.0"
+LABEL org.opencontainers.image.source="https://github.com/stremio-manager/EasyProxy"
 
+# Esponi la porta su cui l'applicazione è in ascolto.
 EXPOSE 7860
 
-# Avvio semplice: così vediamo subito errori/import/traceback nei log
-CMD ["sh","-c","python -u app.py"]
+# Comando per avviare l'app in produzione con Gunicorn
+# Usa sh -c per permettere l'espansione della variabile d'ambiente $PORT
+CMD sh -c "gunicorn --bind 0.0.0.0:${PORT:-7860} --workers 4 --worker-class aiohttp.worker.GunicornWebWorker --timeout 120 --graceful-timeout 120 app:app"
