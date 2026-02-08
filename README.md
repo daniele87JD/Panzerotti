@@ -1,3 +1,10 @@
+---
+title: Panzerotti
+sdk: docker
+app_port: 7860
+---
+
+
 # 🚀 EasyProxy - Universal Server Proxy for HLS Streaming
 
 [![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://python.org)
